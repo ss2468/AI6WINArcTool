@@ -1,6 +1,7 @@
-import struct
 import os
+import struct
 import tempfile
+
 from silky_lzss import SilkyLZSS
 
 # 4 байта I: длина описания файлов.
@@ -88,7 +89,7 @@ verbose: False (no progress messages) or True (enable progress messages)."""
         input_file = open(self._arc_name, 'rb')
         limit = self._read_header(input_file)
         array_name = []
-        while (input_file.tell() < limit):
+        while input_file.tell() < limit:
             name_len = input_file.read(1)[0]
             name = self.decrypt_name(input_file.read(name_len))
             prms = []

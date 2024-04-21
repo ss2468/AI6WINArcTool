@@ -1,9 +1,9 @@
 # GUI for this tool. Nothing more, nothing less.
 
 from tkinter.messagebox import showinfo, showwarning, showerror
+
 from ai6win_arc import AI6WINArc
 from gui import SilkyArcToolGUI  # Truly got in handy.
-
 
 class AI6WINArcToolGUI(SilkyArcToolGUI):
     _strings_lib = {

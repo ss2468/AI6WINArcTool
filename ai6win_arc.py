@@ -15,8 +15,8 @@
 import os
 import struct
 import tempfile
-from silky_arc import SilkyArc
 
+from silky_arc import SilkyArc
 
 class AI6WINArc(SilkyArc):  # Previously released tool came to be handy.
     # Some part of the class is from SilkyArcTool.
@@ -43,8 +43,7 @@ verbose: False (no progress messages) or True (enable progress messages)."""
         entry_count = self._read_header(input_file)
         array_name = []
         for entrer in range(entry_count):
-            prms = []
-            prms.append(None)  # Crutch to support imported function.
+            prms = [None]
 
             name = self.decrypt_name(input_file.read(self.bytes_for_name))
             prms.append(name)
