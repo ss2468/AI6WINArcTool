@@ -20,3 +20,9 @@ if __name__ == '__main__':
         test("pack")
     else:
         main()
+
+    # # fixme 探究AI6的拆包与封包
+    # from ai6win_arc import AI6WINArc
+    # test_arc = AI6WINArc("C:/Users/Administrator/Desktop/mes.arc", "C:/Users/Administrator/Desktop/mes", integrity_check=True)
+    # test_arc.unpack()
+    # # test_arc.pack()

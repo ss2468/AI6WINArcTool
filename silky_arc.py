@@ -37,9 +37,11 @@ verbose: False (no progress messages) or True (enable progress messages)."""
     def unpack(self) -> None:
         if self._verbose:
             print("=== === === UNPACKING OF {0} STARTS!/РАСПАКОВКА {0} НАЧАТА! === === ===".format(self._arc_name))
+        # 获取文件头信息
         self._names = self._unpack_names()
         if self._verbose:
             print("=== Header of {0} unpacked!/Заголовок {0} распакован! ===".format(self._arc_name))
+        # 拆包
         self._unpack_files()
         if self._verbose:
             print("=== Files of {0} unpacked!/Файлы {0} распакованы! ===".format(self._arc_name))
@@ -55,6 +57,7 @@ verbose: False (no progress messages) or True (enable progress messages)."""
             os.rename(self._arc_name, self._arc_name + '.bak')
         except OSError:
             pass
+        # 封包时并没有使用原文件顺序，但mes.arc中各区块的大小是相同的
         self._pack_files(head_len, temp_file)
         if self._verbose:
             print("=== Archive {0} successfully compiled!/Архив {0} успешно собран! ===".format(self._arc_name))
@@ -83,11 +86,12 @@ verbose: False (no progress messages) or True (enable progress messages)."""
     # Unpacking methods.
 
     def _read_header(self, filer) -> int:
+        # 从filer中读取4个字节，format I 代表将其解析为无符号整数
         return struct.unpack('I', filer.read(4))[0]
 
     def _unpack_names(self) -> list:
         input_file = open(self._arc_name, 'rb')
-        limit = self._read_header(input_file)
+        limit = self._read_header(input_file)  # 包含的文件数
         array_name = []
         while input_file.tell() < limit:
             name_len = input_file.read(1)[0]
@@ -106,24 +110,26 @@ verbose: False (no progress messages) or True (enable progress messages)."""
         os.makedirs(self._dir_name, exist_ok=True)
         input_file = open(self._arc_name, 'rb')
 
+        # [None, 文件名, 大小, 解压后大小, 位置]
+        # [None, 'liblary.lib', 4160, 14330, 62292] 62292+4160=66452
+        # [None, 'Camp.mes', 278, 713, 66452]
         for i in self._names:
             this_file_name = os.path.normpath(os.path.join(self._dir_name, i[1]))
+            print(f"file:{i[1]} begin:{i[4]} end:{i[4] + i[2]}")  # 每个文件的起始和结尾
             input_file.seek(i[4], 0)
             new_file_bytes = input_file.read(i[2])
             if self._integrity_check:
                 try:
                     assert len(new_file_bytes) == i[2]
                 except AssertionError:
-                    print("!!! File {0} compressed size is incorrect!/Размер сжатого файла {0} некорректен!".
-                          format(i[1]))
-            if i[2] != i[3]:  # If the entry is encrypted...
-                new_file_bytes = self.lzss_decompress(new_file_bytes)
+                    print("!!! File {0} compressed size is incorrect!/Размер сжатого файла {0} некорректен!".format(i[1]))
+            if i[2] != i[3]:  # 判断文件是否被lzss压缩
+                new_file_bytes = self.lzss_decompress(new_file_bytes)  # lzss解压
                 if self._integrity_check:
                     try:
                         assert len(new_file_bytes) == i[3]
                     except AssertionError:
-                        print("!!! File {0} true size is incorrect!/Истинный размер файла {0} некорректен!".
-                              format(i[1]))
+                        print("!!! File {0} true size is incorrect!/Истинный размер файла {0} некорректен!".format(i[1]))
             os.makedirs(os.path.dirname(this_file_name), exist_ok=True)
             with open(this_file_name, 'wb') as this_file:
                 this_file.write(new_file_bytes)
